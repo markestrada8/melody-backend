@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm.attributes import flag_modified
 from flask_marshmallow import Marshmallow
 from flask_cors import CORS
 import os
@@ -16,75 +17,76 @@ ma = Marshmallow(app)
 CORS(app)
 
 
-class Book(db.Model):
+class Song(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
-    author = db.Column(db.String, nullable=False)
     description = db.Column(db.String, nullable=False)
-    price = db.Column(db.Float, nullable=False)
+    song = db.Column(db.JSON, nullable=False)
 
-    def __init__(self, title, author, description, price):
+    def __init__(self, title, description, song):
         self.title = title
-        self.author = author
         self.description = description
-        self.price = price
+        self.song = song
 
 
-class BookSchema(ma.Schema):
+class SongSchema(ma.Schema):
     class Meta:
-        fields = ("id", "title", "author", "description", "price")
+        fields = ("id", "title", "description", "song")
 
 
-book_schema = BookSchema()
-books_schema = BookSchema(many=True)
+song_schema = SongSchema()
+songs_schema = SongSchema(many=True)
 
 
-@app.route("/book/add", methods=["POST"])
-def add_book():
+@app.route("/song/add", methods=["POST"])
+def add_song():
     title = request.json.get("title")
-    author = request.json.get("author")
     description = request.json.get("description")
-    price = request.json.get("price")
+    song = request.json.get("song")
 
-    record = Book(title, author, description, price)
+    record = Song(title, description, song)
     db.session.add(record)
     db.session.commit()
 
-    return jsonify(book_schema.dump(record))
+    return jsonify(song_schema.dump(record))
 
 
-@app.route("/book/get", methods=["GET"])
-def get_all_books():
-    all_books = Book.query.all()
-    return jsonify(books_schema.dump(all_books))
+@app.route("/song/get", methods=["GET"])
+def get_all_songs():
+    all_songs = Song.query.all()
+    return jsonify(songs_schema.dump(all_songs))
 
 
-@app.route("/book/<id>", methods=["DELETE"])
-def delete_book(id):
-    book = Book.query.get(id)
-    db.session.delete(book)
+@app.route("/song/<id>", methods=["GET"])
+def get_song(id):
+    song = Song.query.get(id)
+    return jsonify(song_schema.dump(song))
+
+
+@app.route("/song/<id>", methods=["DELETE"])
+def delete_song(id):
+    song = Song.query.get(id)
+    db.session.delete(song)
     db.session.commit()
 
     return "Item was successfully deleted"
 
 
-@app.route("/book/<id>", methods=["GET"])
-def get_book(id):
-    book = Book.query.get(id)
-    return jsonify(book_schema.dump(book))
+@app.route("/song/<id>", methods=["PUT"])
+def update_song(id):
+    song_to_update = Song.query.get(id)
 
+    updated_title = request.json.get("title")
+    updated_description = request.json.get("description")
+    updated_song = request.json.get("song")
 
-@app.route("/book/<id>", methods=["PUT"])
-def update_book(id):
-    book = Book.query.get(id)
-
-    book.title = request.json['title']
-    book.author = request.json['author']
-    book.description = request.json['description']
-    book.price = request.json['price']
-
+    # db.session.commit()
+    # return jsonify(song_schema.dump(song))
+    # user = User.query().filter(User.name == 'Jon Dove')
+    song_to_update.title = updated_title
+    song_to_update.description = updated_description
+    song_to_update.song = updated_song
     db.session.commit()
-    return jsonify(book_schema.dump(book))
 
 
 if __name__ == "__main__":
