@@ -87,6 +87,7 @@ def update_song(id):
     song_to_update.description = updated_description
     song_to_update.song = updated_song
     db.session.commit()
+    return jsonify(song_schema.dump(song_to_update))
 
 
 if __name__ == "__main__":
