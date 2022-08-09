@@ -80,9 +80,6 @@ def update_song(id):
     updated_description = request.json.get("description")
     updated_song = request.json.get("song")
 
-    # db.session.commit()
-    # return jsonify(song_schema.dump(song))
-    # user = User.query().filter(User.name == 'Jon Dove')
     song_to_update.title = updated_title
     song_to_update.description = updated_description
     song_to_update.song = updated_song
