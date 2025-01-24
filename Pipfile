@@ -14,4 +14,4 @@ gunicorn = "*"
 flask-cors = "*"
 
 [requires]
-python_version = 3.13.1
+python_version = "3.12.1"
